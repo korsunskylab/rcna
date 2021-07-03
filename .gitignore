@@ -1,0 +1,14 @@
+inst/doc
+*.ipynb
+.DS_Store
+.ipynb_checkpoints
+**/.ipynb_checkpoints
+src/Makevars
+src/*.o
+src/*.so
+config.log
+.Rproj.user
+config.status
+*.Rproj
+*.swp
+..Rcheck
