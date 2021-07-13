@@ -1,0 +1,28 @@
+Package: rcna
+Title: Covarying Neighborhood Analysis 
+Version: 0.0.99
+Authors@R: 
+    person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", role = c("cre", "aut"), comment = c(ORCID = "0000-0003-4848-3948"))
+Description: R implementation of Covarying Neighborhood Analysis, based on original python package: https://github.com/yakirr/cna. 
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.1.1
+Depends: R(>= 3.4.0)
+LazyData: true
+Imports:
+    ggthemes,
+    ggplot2,
+    dplyr,
+    RSpectra,
+    glue,
+    patchwork,
+    purrr,
+    Matrix,
+    rlang,
+    tibble,
+    moments
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
