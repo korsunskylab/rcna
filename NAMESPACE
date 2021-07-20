@@ -2,6 +2,8 @@
 
 export("%>%")
 export(association)
+export(association.Seurat)
+export(create_object.Seurat)
 export(dimplot.generic)
 export(dimplot.ncorr)
 export(nam)

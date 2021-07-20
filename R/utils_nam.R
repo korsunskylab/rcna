@@ -95,25 +95,54 @@ diffuse_step <- function(data, s) {
 ## NOTE: .resid_nam scales NAM columns, so this is correlation, not covariance
 .svd_nam <- function(NAM, npcs) {
     if (missing(npcs) | npcs > .5 * min(dim(NAM))) {
-        svd_res <- svd(NAM) 
+        svd_res <- svd(NAM)
     } else {
         svd_res <- RSpectra::svds(NAM, k = npcs)
     }
-    U_df <- svd_res$u
+
+    U_df <- svd_res$u[, seq_len(npcs)]
     colnames(U_df) <- paste0('PC', seq_len(npcs))
     rownames(U_df) <- rownames(NAM)
-    V_df <- svd_res$v
+    V_df <- svd_res$v[, seq_len(npcs)]
     colnames(V_df) <- paste0('PC', seq_len(npcs))
     rownames(V_df) <- colnames(NAM)
     return(list(U=U_df, svs=svd_res$d^2, V=V_df))
 }
 
 
+# .nam <- function(data, nsteps=NULL, maxnsteps=15L) {
+#     s <- model.matrix(~0+SampleID, data$obs)
+#     colnames(s) <- gsub('^SampleID(.*)', '\\1', colnames(s))
+#     rownames(s) <- data$obs$CellID
+#     s <- s[, data$samplem$SampleID] ## Necessary? 
+    
+#     prevmedkurt <- Inf
+#     ## CHECK: number of iterations matches 
+#     for (i in seq_len(maxnsteps)) {
+#         s <- diffuse_step(data, s)
+#         medkurt <- median(apply(prop.table(s, 2), 1, moments::kurtosis))
+        
+#         if (is.null(nsteps)) {
+#             prevmedkurt <- medkurt
+#             if (prevmedkurt - medkurt < 3 & i > 3) {
+#                 message(glue::glue('stopping after {i} steps'))
+#                 break 
+#             }            
+#         } else if (i == nsteps) {
+#             break
+#         }
+#     }  
+#     snorm <- t(prop.table(s, 2))
+#     rownames(snorm) <- data$samplem$SampleID
+#     colnames(snorm) <- data$obs$CellID
+#     return(snorm)
+# }
 .nam <- function(data, nsteps=NULL, maxnsteps=15L) {
-    s <- model.matrix(~0+SampleID, data$obs)
-    colnames(s) <- gsub('^SampleID(.*)', '\\1', colnames(s))
-    rownames(s) <- data$obs$CellID
-    s <- s[, data$samplem$SampleID] ## Necessary? 
+    f <- as.formula(as.character(glue('~0+{data$samplem_key}')))    
+    s <- model.matrix(f, data$obs)
+    colnames(s) <- gsub(as.character(glue('^{data$samplem_key}(.*)')), '\\1', colnames(s))
+    rownames(s) <- data$obs[[data$obs_key]]    
+    s <- s[, data$samplem[[data$samplem_key]]] ## Necessary? 
     
     prevmedkurt <- Inf
     ## CHECK: number of iterations matches 
@@ -132,8 +161,8 @@ diffuse_step <- function(data, s) {
         }
     }  
     snorm <- t(prop.table(s, 2))
-    rownames(snorm) <- data$samplem$SampleID
-    colnames(snorm) <- data$obs$CellID
+    rownames(snorm) <- data$samplem[[data$samplem_key]]
+    colnames(snorm) <- data$obs[[data$obs_key]]
     return(snorm)
 }
 

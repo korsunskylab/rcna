@@ -12,6 +12,7 @@ association(
   nsteps = NULL,
   suffix = "",
   force_recompute = FALSE,
+  return_nam = FALSE,
   verbose = TRUE
 )
 }

@@ -105,7 +105,7 @@
         if (min(fdrs$fdr) > 0.05) {        
             fdr_5p_t <- NULL
         } else {
-            fdr_5p_t <- min(subset(fdrs, fdr < 0.1)$threshold)        
+            fdr_5p_t <- min(subset(fdrs, fdr < 0.05)$threshold)        
         }
         if (min(fdrs$fdr) > 0.05) {        
             fdr_10p_t <- NULL
@@ -153,7 +153,7 @@
 #' @export 
 association <- function(
     data, y, batches=NULL, covs=NULL, nsteps=NULL, suffix='',
-    force_recompute=FALSE, verbose=TRUE
+    force_recompute=FALSE, return_nam=FALSE, verbose=TRUE
 ) {
 
     
@@ -204,6 +204,14 @@ association <- function(
         batches_vec
     )
 
+    if (return_nam) {
+#         res[[paste0('NAM_embeddings', suffix)]] <- nam_res$NAM_nbhdXpc
+#         res[[paste0('NAM_loadings', suffix)]] <- nam_res$NAM_sampleXpc
+#         res[[paste0('NAM_svs', suffix)]] <- nam_res$NAM_svs
+        res[['NAM_embeddings']] <- nam_res$NAM_nbhdXpc
+        res[['NAM_loadings']] <- nam_res$NAM_sampleXpc
+        res[['NAM_svs']] <- nam_res$NAM_svs
+    }
     # TODO: add info about kept cells
 #     vars(res)['kept'] = du['keptcells'+suffix]
 
