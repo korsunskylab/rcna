@@ -14,4 +14,4 @@ And follow either
 
 Next, 
 - Read the paper at https://www.biorxiv.org/content/10.1101/2021.04.19.440534v1.full
-- Read the python code at https://github.com/yakirr/cna
+- Read the python code at https://github.com/immunogenomics/cna
