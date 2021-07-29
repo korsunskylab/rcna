@@ -1,4 +1,4 @@
-This package provides a native R implementation of the cna python package by Reshev and Rumker. 
+This package provides a native R implementation of the cna python package by Reshef and Rumker. 
 
 To get started, install rcna
 
