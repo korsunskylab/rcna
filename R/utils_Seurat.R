@@ -97,14 +97,18 @@ association.Seurat <- function(
         misc = cna_res ## Association results 
     )
     seurat_object@meta.data$cna_ncorrs <- cna_res$ncorrs[colnames(seurat_object), , drop=TRUE]
-    seurat_object@meta.data$cna_ncorrs_fdr05 <- dplyr::case_when(
-        abs(seurat_object@meta.data$cna_ncorrs) < cna_res$fdr_5p_t ~ 0,
-        TRUE ~ seurat_object@meta.data$cna_ncorrs
-    )
-    seurat_object@meta.data$cna_ncorrs_fdr10 <- dplyr::case_when(
-        abs(seurat_object@meta.data$cna_ncorrs) < cna_res$fdr_10p_t ~ 0,
-        TRUE ~ seurat_object@meta.data$cna_ncorrs
-    )
+    ## NOTE: If threshold was NULL, then no cells passed the significance threshold 
+    seurat_object@meta.data$cna_ncorrs_fdr05 <- rep(0, nrow(seurat_object@meta.data))
+    if (!is.null(cna_res$fdr_5p_t)) {
+        idx_passed <- which(abs(seurat_object@meta.data$cna_ncorrs) >= cna_res$fdr_5p_t)
+        seurat_object@meta.data$cna_ncorrs_fdr05[idx_passed] <- seurat_object@meta.data$cna_ncorrs[idx_passed]
+    }
+    
+    seurat_object@meta.data$cna_ncorrs_fdr10 <- rep(0, nrow(seurat_object@meta.data))
+    if (!is.null(cna_res$fdr_10p_t)) {
+        idx_passed <- which(abs(seurat_object@meta.data$cna_ncorrs) >= cna_res$fdr_10p_t)
+        seurat_object@meta.data$cna_ncorrs_fdr10[idx_passed] <- seurat_object@meta.data$cna_ncorrs[idx_passed]
+    }
     
     return(seurat_object)
 }
