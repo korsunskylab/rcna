@@ -68,6 +68,7 @@
 
     # get neighborhood scores with chosen model
     ncorrs <- V[, 1:k] %*% (sqrt(sv[1:k]) * beta/n)    
+    rownames(ncorrs) <- rownames(V)
 
     # compute final p-value using Nnull null f-test p-values
     y_ <- conditional_permutation(batches_vec, y, Nnull)
