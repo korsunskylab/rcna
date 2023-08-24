@@ -86,6 +86,8 @@ association.Seurat <- function(
         ## Choose first assay 
         assay <- names(seurat_object@assays)[[1]]
     }
+
+    cna_res$samplem_df = rcna_data$samplem
     
     ## (3) save results 
     seurat_object[['cna']] <- Seurat::CreateDimReducObject(
