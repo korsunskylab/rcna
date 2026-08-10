@@ -6,7 +6,7 @@ To get started, install `rcna`
 library(devtools)
 install_github('korsunskylab/rcna')
 ```
-and follow the [pre-rendered vignette](docs/rcna_demo.html). You can also re-render the vignette yourself by installing the required packages and running
+and follow the [pre-rendered vignette](https://korsunskylab.github.io/rcna/rcna_demo.html). You can also re-render the vignette yourself by installing the required packages and running
 ```{r}
 # install rcna requirements and vignette requirements
 devtools::install(dependencies = TRUE) 
