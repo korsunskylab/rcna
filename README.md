@@ -1,4 +1,4 @@
-This package provides a native R implementation of the (`cna` python package)[https://github.com/immunogenomics/cna] by Reshef and Rumker. 
+This package provides a native R implementation of the `cna` [python package](https://github.com/immunogenomics/cna) by Reshef and Rumker. 
 
 To get started, install `rcna`
 
@@ -6,7 +6,7 @@ To get started, install `rcna`
 library(devtools)
 install_github('korsunskylab/rcna')
 ```
-and follow the (pre-rendedred vignette)[docs/rcna_demo.html]. You can also re-render the vignette yourself by installing the required packages and running
+and follow the [pre-rendered vignette](docs/rcna_demo.html). You can also re-render the vignette yourself by installing the required packages and running
 ```{r}
 # install rcna requirements and vignette requirements
 devtools::install(dependencies = TRUE) 
@@ -15,8 +15,8 @@ rmarkdown::render("vignettes/rcna_demo.Rmd", output_dir="docs")
 ```
 
 Next, 
-- Read the (paper)[https://www.nature.com/articles/s41587-021-01066-4].
-- Read the (python code)[https://github.com/immunogenomics/cna].
+- Read the [paper](https://www.nature.com/articles/s41587-021-01066-4).
+- Read the [python code](https://github.com/immunogenomics/cna).
 
 # Release Notes
 ## August 2026
