@@ -1,0 +1,238 @@
+---
+title: "rcna demo"
+author: "David Oliver"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rcna demo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Covarying Neighborhood Analysis Tutorial
+
+## Minimal Working Example
+
+### Input Data
+
+The expected input for `rcna`'s `assocation` and `nam` functions is a list containing 
+`list(samplem, obs, connectivities, samplem_key, obs_key, N)`. 
+
+* The `samplem` element
+contains a `data.frame` with sample level information (one row for each sample).
+* The `obs` element contains a `data.frame` with cell level information 
+e.g. `colData` of a `SingleCellExperiment` object. 
+* The `connectivities` element
+contains the KNN graph as a sparse matrix object. 
+* The `samplem_key` and `obs_key`
+elements should be character strings which identify the columns of the corresponding
+element unique IDs e.g. `samplem_key = "donor_id"` and `obs_key = "cell_id"`. 
+* Finally `N` should be an integer indicating the number of samples in the dataset.
+
+`rcna` also provides `createCNAListSCE` a helper function for generating the input 
+data list from a `SingleCellExperiment` as well as `associationSCE` for performing 
+`rcna` directly on the `SingleCellExperiment`.
+
+```{r}
+
+library(rcna)
+suppressPackageStartupMessages({
+    library(dplyr)
+    library(ggplot2)
+    library(SingleCellExperiment)
+    library(anndataR)
+    library(ggbeeswarm)
+})
+
+
+demo <- system.file("ext/", "demo_data.h5ad", package = "rcna") |> 
+    read_h5ad(as = "SingleCellExperiment")
+
+demo
+
+rcna_data <- createCNAListSCE(sce = demo, 
+                              y = "case", 
+                              sample.key = "id", 
+                              sample.vars = c("male", "batch"), 
+                              knn.graph = "connectivities")
+
+sapply(rcna_data, class)
+
+sapply(rcna_data$samplem, class)
+
+# rcna expects batches and IDs to be factors
+rcna_data$samplem$batch <- factor(rcna_data$samplem$batch)
+rcna_data$obs$id <- factor(rcna_data$obs$id)
+
+```
+
+### Perform Case/Control Analysis
+
+```{r}
+
+res <- association(data = rcna_data, 
+                   y = "case", 
+                   batches = "batch", 
+                   covs = "male", 
+                   verbose = FALSE)
+
+# global association p-value
+res$p
+
+# neighborhoods passed significance at FDR 5%
+sum(abs(res$ncorrs) > res$fdr_5p_t)
+
+```
+
+#### Visualize the results
+
+```{r}
+
+dimplotCoords(coords = reducedDim(demo, "X_umap"), 
+              y = res$ncorrs, 
+              threshold = res$fdr_5p_t)
+
+```
+
+In the plot above, each cell is colored according to its neighborhood coefficient, 
+i.e., color corresponds to the correlation of abundance in each cell's corresponding 
+neighborhood to case/control status. Neighborhoods that don't pass FDR 5% are shown 
+in gray. As this plot shows, cases have a greater abundance of cells from the 
+left-hand cluster relative to controls.
+
+### Analyze a More Sophisticated Phenotype
+
+Next, perform an association test for male/female sex rather than case/control status.
+
+```{r}
+
+res <- association(data = rcna_data, 
+                   y = "male", 
+                   batches = "batch", 
+                   covs = "case", 
+                   verbose = FALSE)
+
+dimplotCoords(coords = reducedDim(demo, "X_umap"), 
+              y = res$ncorrs, 
+              threshold = res$fdr_5p_t)
+
+```
+
+It's now clear that a sub-population of the left-hand cluster is more abundant in 
+males. CNA automatically picked up on this without needing to be given a resolution 
+parameter.
+
+Note that it looks like some cells in the right-hand cluster pass our FDR threshold 
+of 5%. However, these cells comprise only ~6% of the cells that pass the threshold 
+and so are likely false discoveries.
+
+### Relate Results to Clusters
+
+```{r}
+
+cldata <- data.frame(reducedDim(demo, "X_umap"), 
+                     leiden = demo$leiden, 
+                     ncorrs = res$ncorrs) 
+colnames(cldata)[1:2] <- c("UMAP_1", "UMAP_2")
+
+ggplot(cldata) + 
+    geom_point(aes(x = UMAP_1, y = UMAP_2, color = leiden)) + 
+    theme_classic()
+
+```
+
+We can examine within-cluster heterogeneity characterized by CNA by visualizing 
+the distribution of neighborhood coefficients within each cluster.
+
+```{r}
+
+ggplot(cldata) +
+    geom_beeswarm(aes(x = leiden, y = ncorrs, color = ncorrs), 
+                              cex = 0.5) + 
+    scale_color_gradient2(low = "blue", mid = "gray60", high = "red") +
+    theme_classic()
+
+```
+
+### Relate Results to Genes
+
+To characterize the populations driving the association, we can examine per-gene 
+correlations to neighborhood coefficient. These per-gene values may be informative 
+on their own, or they could be further analyzed using techniques like gene set 
+enrichment analysis.
+
+```{r}
+
+caseCorr <- cor(as.vector(res$ncorrs), t(assay(demo, "X"))) |> 
+    t() |> 
+    data.frame(cor = _)
+
+arrange(caseCorr, cor) |> tail()
+arrange(caseCorr, cor) |> head()
+
+```
+
+<!--
+## Working Directly with SingleCellExperiment Objects
+-->
+
+```{r, include=FALSE, echo=FALSE}
+
+# demo_sce <- qs2::qs_read("~/Git/cna-rcna-test/Baella.qs2")
+# 
+# colPair(demo_sce, "uwot_sim") <- uwot::similarity_graph(reducedDim(demo_sce, "HARMONY"))
+# 
+# 
+# demo <- createCNAListSCE(demo_sce, y = "treatment", sample.key = "Sample", 
+#                          sample.vars = "patient_id",
+#                           knn.graph = "uwot_sim")
+# 
+# nm <- nam(data = demo, 
+#           y = "treatment", 
+#           batches = "patient_id", 
+#           ridge.crit = "gcv", 
+#           verbose = TRUE)
+# 
+# res <- association(nam.result = nm, Ks = 4,
+#                    return.nam = TRUE, 
+#                    force.permute.all = FALSE, 
+#                    allow.duplicate.perms = TRUE, 
+#                    verbose = TRUE)
+# res$p
+# plot(res$NAM_varexp)
+# plot(res$fdrs$threshold, res$fdrs$fdr, pch = 20, ylim = c(0,1))
+# 
+# dimplotCorr(res = res, fdr.thresh = 1)
+# 
+# thresh <- subset(res$fdrs, fdr < 1) |> 
+#     dplyr::slice_head(n = 1) |> 
+#     dplyr::pull(threshold) 
+# 
+# dimplotCoords(coords = reducedDim(demo_sce, "UMAP")[res$keptcells,],
+#               y = res$ncorrs, 
+#               label = "correlation",
+#               threshold = 0)
+# 
+# 
+# demo_sce <- associationSCE(demo_sce, 
+#                            y = "Treatment", 
+#                            sample.key = "orig.ident", 
+#                            batches = "Sample",
+#                            graph = "uwot_sim", 
+#                            verbose = TRUE)
+# 
+# names(metadata(demo_sce)$CNA)
+# 
+# dimplotCoords(coords = reducedDim(demo_sce, "UMAP")[metadata(demo_sce)$CNA$keptcells,], 
+#               y = metadata(demo_sce)$CNA$ncorrs, 
+#               threshold = 0.3)
+
+```
+
+
+
+

@@ -1,29 +1,42 @@
 Package: rcna
 Title: Covarying Neighborhood Analysis 
-Version: 0.0.99
-Authors@R: 
-    person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", role = c("cre", "aut"), comment = c(ORCID = "0000-0003-4848-3948"))
+Version: 0.1.0
+Authors@R: c(
+    person("Ilya", "Korsunsky", 
+            email = "ilya.korsunsky@gmail.com", 
+            role = c("cre", "aut", "trl"), 
+            comment = c(ORCID = "0000-0003-4848-3948")),
+    person("David", "Oliver", 
+            email = "oliverd@hss.edu", 
+            role = c("aut", "trl"), 
+            comment = c(ORCID = "0000-0002-2034-0921")),
+    person("Yakir", "Reshef", 
+            email = "YakirR@broadinstitute.org",
+            role = c("aut"))
+    )
 Description: R implementation of Covarying Neighborhood Analysis, based on original python package: https://github.com/yakirr/cna. 
-License: GPL-3 + file LICENSE
+License: GPL (>= 3)
 Encoding: UTF-8
-RoxygenNote: 7.1.1
-Depends: R(>= 3.4.0)
+RoxygenNote: 7.3.3
+Depends: R(>= 4.1.0)
 LazyData: true
 Imports:
-    ggthemes,
     ggplot2,
     dplyr,
     RSpectra,
-    glue,
-    patchwork,
-    purrr,
     Matrix,
-    rlang,
-    tibble,
-    moments
+    stats
 Suggests:
-    testthat,
+    testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    Seurat 
+    BiocNeighbors,
+    SingleCellExperiment,
+    rhdf5,
+    anndataR,
+    S4Vectors,
+    SummarizedExperiment,
+    moments,
+    ggbeeswarm
+Config/testthat/edition: 3
 VignetteBuilder: knitr
